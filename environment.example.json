@@ -1,0 +1,27 @@
+{
+  "name": "ALT Zone Portfolio Example",
+  "values": [
+    {
+      "key": "baseUrl",
+      "value": "https://devapi.altzone.fi",
+      "enabled": true
+    },
+    {
+      "key": "teacherBaseUrl",
+      "value": "https://devapi.altzone.fi/teacher",
+      "enabled": true
+    },
+    {
+      "key": "username",
+      "value": "",
+      "enabled": true
+    },
+    {
+      "key": "password",
+      "value": "",
+      "enabled": true
+    }
+  ],
+  "_postman_variable_scope": "environment",
+  "_postman_exported_using": "Postman"
+}
