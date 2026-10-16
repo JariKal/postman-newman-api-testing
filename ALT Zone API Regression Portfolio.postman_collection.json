@@ -1,0 +1,1101 @@
+{
+  "info": {
+    "_postman_id": "9e42c727-b325-4ff0-b739-f27773336d96",
+    "name": "ALT Zone API Regression Portfolio",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+    "_exporter_id": "56750639",
+    "_collection_link": "https://go.postman.co/collection/56750639-9e42c727-b325-4ff0-b739-f27773336d96?source=collection_link"
+  },
+  "item": [
+    {
+      "name": "Regression Portfolio",
+      "item": [
+        {
+          "name": "00 Setup & Authentication",
+          "item": [
+            {
+              "name": "Sign In",
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "type": "text/javascript",
+                    "exec": [
+                      "pm.environment.unset(\"accessToken\");\r\npm.environment.unset(\"profileId\");\r\npm.environment.unset(\"playerId\");\r\npm.environment.unset(\"clanId\");\r\n\r\npm.test(\"Sign In onnistui\", function () {\r\n    pm.response.to.have.status(201);\r\n});\r\n\r\npm.test(\"Response is JSON\", function () {\r\n    pm.response.to.be.json;\r\n});\r\n\r\nconst json = pm.response.json();\r\n\r\npm.test(\"Profile data löytyy\", function () {\r\n    pm.expect(json._id).to.be.a(\"string\");\r\n    pm.expect(json.username).to.be.a(\"string\");\r\n});\r\n\r\npm.test(\"Player löytyy\", function () {\r\n    pm.expect(json.Player).to.be.an(\"object\");\r\n    pm.expect(json.Player._id).to.be.a(\"string\");\r\n});\r\n\r\npm.test(\"Clan löytyy\", function () {\r\n    pm.expect(json.Clan).to.be.an(\"object\");\r\n    pm.expect(json.Clan._id).to.be.a(\"string\");\r\n});\r\n\r\npm.test(\"AccessToken löytyi\", function () {\r\n    pm.expect(json.accessToken).to.be.a(\"string\");\r\n    pm.expect(json.accessToken).to.not.be.empty;\r\n});\r\n\r\npm.test(\"hasSecurityQuestion on boolean\", function () {\r\n    pm.expect(json.hasSecurityQuestion).to.be.a(\"boolean\");\r\n});\r\n\r\nif (pm.response.code === 201) {\r\n    pm.environment.set(\"accessToken\", json.accessToken);\r\n    pm.environment.set(\"profileId\", json._id);\r\n    pm.environment.set(\"playerId\", json.Player._id);\r\n    pm.environment.set(\"clanId\", json.Clan._id);\r\n}\r\n\r\npm.test(\"Sign In variables were saved\", function () {\r\n    pm.expect(pm.environment.get(\"accessToken\")).to.eql(json.accessToken);\r\n    pm.expect(pm.environment.get(\"profileId\")).to.eql(json._id);\r\n    pm.expect(pm.environment.get(\"playerId\")).to.eql(json.Player._id);\r\n    pm.expect(pm.environment.get(\"clanId\")).to.eql(json.Clan._id);\r\n});"
+                    ]
+                  }
+                }
+              ],
+              "request": {
+                "auth": {
+                  "type": "noauth"
+                },
+                "method": "POST",
+                "header": [],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\r\n  \"username\": \"{{username}}\",\r\n  \"password\": \"{{password}}\"\r\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                },
+                "url": {
+                  "raw": "{{baseUrl}}/auth/signIn",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "auth",
+                    "signIn"
+                  ]
+                }
+              },
+              "response": []
+            }
+          ]
+        },
+        {
+          "name": "01 Smoke Test",
+          "item": [
+            {
+              "name": "My Profile",
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "type": "text/javascript",
+                    "exec": [
+                      "pm.test(\"Get My Profile palauttaa 200\", function () {\r\n    pm.response.to.have.status(200);\r\n});\r\n\r\npm.test(\"Response on JSON\", function () {\r\n    pm.response.to.be.json;\r\n});\r\n\r\nconst json = pm.response.json();\r\n\r\npm.test(\"Response sisältää Profile-datan\", function () {\r\n    pm.expect(json.data).to.exist;\r\n    pm.expect(json.data.Profile).to.exist;\r\n});\r\n\r\nconst profile = json.data.Profile;\r\nconst profileId = pm.environment.get(\"profileId\");\r\n\r\npm.test(\"profileId löytyy environmentista\", function () {\r\n    pm.expect(profileId).to.exist;\r\n    pm.expect(profileId).to.not.eql(\"\");\r\n});\r\n\r\npm.test(\"Profiilin ID on oikea\", function () {\r\n    pm.expect(profile._id).to.eql(profileId);\r\n});\r\n\r\npm.test(\"Käyttäjänimi löytyy\", function () {\r\n    pm.expect(profile.username).to.be.a(\"string\");\r\n    pm.expect(profile.username).to.not.be.empty;\r\n});"
+                    ]
+                  }
+                }
+              ],
+              "request": {
+                "method": "GET",
+                "header": [],
+                "url": {
+                  "raw": "{{baseUrl}}/profile/{{profileId}}",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "profile",
+                    "{{profileId}}"
+                  ]
+                }
+              },
+              "response": []
+            },
+            {
+              "name": "My Player",
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "type": "text/javascript",
+                    "exec": [
+                      "pm.test(\"Get My Player palauttaa 200\", function () {\r\n    pm.response.to.have.status(200);\r\n});\r\n\r\npm.test(\"Response on JSON\", function () {\r\n    pm.response.to.be.json;\r\n});\r\n\r\nconst json = pm.response.json();\r\n\r\npm.test(\"Response sisältää Player-datan\", function () {\r\n    pm.expect(json.data).to.exist;\r\n    pm.expect(json.data.Player).to.exist;\r\n});\r\n\r\nconst player = json.data.Player;\r\n\r\nconst requiredVariables = [\r\n    \"playerId\",\r\n    \"profileId\"\r\n];\r\n\r\nrequiredVariables.forEach(variable => {\r\n    const value = pm.environment.get(variable);\r\n\r\n    pm.test(`Environment variable ${variable} exists`, function () {\r\n        pm.expect(value, `${variable} is missing`).to.exist;\r\n        pm.expect(value, `${variable} is empty`).to.not.eql(\"\");\r\n    });\r\n});\r\n\r\npm.test(\"Player ID on oikea\", function () {\r\n    pm.expect(player._id).to.eql(pm.environment.get(\"playerId\"));\r\n});\r\n\r\npm.test(\"Playerin nimi löytyy\", function () {\r\n    pm.expect(player.name).to.be.a(\"string\");\r\n    pm.expect(player.name).to.not.be.empty;\r\n});\r\n\r\npm.test(\"Player kuuluu oikeaan profiiliin\", function () {\r\n    pm.expect(player.profile_id).to.eql(pm.environment.get(\"profileId\"));\r\n});"
+                    ]
+                  }
+                }
+              ],
+              "request": {
+                "method": "GET",
+                "header": [],
+                "url": {
+                  "raw": "{{baseUrl}}/player/{{playerId}}",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "player",
+                    "{{playerId}}"
+                  ]
+                }
+              },
+              "response": []
+            },
+            {
+              "name": "My Clan",
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "type": "text/javascript",
+                    "exec": [
+                      "pm.test(\"Get My Clan palauttaa 200\", function () {\r\n    pm.response.to.have.status(200);\r\n});\r\n\r\npm.test(\"Response on JSON\", function () {\r\n    pm.response.to.be.json;\r\n});\r\n\r\nconst json = pm.response.json();\r\n\r\npm.test(\"Response sisältää Clan-datan\", function () {\r\n    pm.expect(json.data).to.exist;\r\n    pm.expect(json.data.Clan).to.exist;\r\n});\r\n\r\nconst clan = json.data.Clan;\r\n\r\npm.test(\"Clan ID on oikea\", function () {\r\n    pm.expect(clan._id).to.eql(pm.environment.get(\"clanId\"));\r\n});\r\n\r\npm.test(\"Clanilla on nimi\", function () {\r\n    pm.expect(clan.name).to.be.a(\"string\");\r\n    pm.expect(clan.name.length).to.be.above(0);\r\n});\r\n\r\npm.test(\"PlayerCount on numero\", function () {\r\n    pm.expect(clan.playerCount).to.be.a(\"number\");\r\n});\r\n\r\npm.test(\"Roles on taulukko\", function () {\r\n    pm.expect(clan.roles).to.be.an(\"array\");\r\n});"
+                    ]
+                  }
+                }
+              ],
+              "request": {
+                "method": "GET",
+                "header": [],
+                "url": {
+                  "raw": "{{baseUrl}}/clan/{{clanId}}",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "clan",
+                    "{{clanId}}"
+                  ]
+                }
+              },
+              "response": []
+            },
+            {
+              "name": "My Rooms",
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "type": "text/javascript",
+                    "exec": [
+                      "pm.environment.unset(\"roomId\");\r\n\r\npm.test(\"Get Clan Rooms palauttaa 200\", function () {\r\n    pm.response.to.have.status(200);\r\n});\r\n\r\npm.test(\"Response is JSON\", function () {\r\n    pm.response.to.be.json;\r\n});\r\n\r\nconst json = pm.response.json();\r\n\r\npm.test(\"Response contains Room array\", function () {\r\n    pm.expect(json.data).to.exist;\r\n    pm.expect(json.data).to.be.an(\"object\");\r\n    pm.expect(json.data.Room).to.be.an(\"array\");\r\n});\r\n\r\nconst rooms = json.data.Room;\r\n\r\npm.test(\"Huoneita löytyi\", function () {\r\n    pm.expect(rooms.length).to.be.above(0);\r\n});\r\n\r\nif (rooms.length > 0) {\r\n    pm.environment.set(\"roomId\", rooms[0]._id);\r\n\r\n    pm.test(\"roomId tallennettiin\", function () {\r\n        pm.expect(pm.environment.get(\"roomId\")).to.eql(rooms[0]._id);\r\n    });\r\n}\r\n\r\npm.test(\"Jokaisella huoneella on kelvollinen ID\", function () {\r\n    rooms.forEach(function (room) {\r\n        pm.expect(room).to.have.property(\"_id\");\r\n        pm.expect(room._id).to.be.a(\"string\");\r\n        pm.expect(room._id).to.match(/^[a-fA-F0-9]{24}$/);\r\n    });\r\n});\r\n\r\npm.test(\"floorType on merkkijono, jos kenttä palautetaan\", function () {\r\n    rooms.forEach(function (room) {\r\n        if (Object.prototype.hasOwnProperty.call(room, \"floorType\")) {\r\n            pm.expect(room.floorType).to.be.a(\"string\");\r\n        }\r\n    });\r\n});"
+                    ]
+                  }
+                }
+              ],
+              "request": {
+                "method": "GET",
+                "header": [],
+                "url": {
+                  "raw": "{{baseUrl}}/room",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "room"
+                  ]
+                }
+              },
+              "response": []
+            }
+          ]
+        },
+        {
+          "name": "02 Authorization Tests",
+          "item": [
+            {
+              "name": "My Profile – No Token",
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "type": "text/javascript",
+                    "exec": [
+                      "pm.test(\"Palauttaa 401 Unauthorized\", function () {\r\n    pm.response.to.have.status(401);\r\n});\r\n\r\npm.test(\"Response on JSON\", function () {\r\n    pm.response.to.be.json;\r\n});\r\n\r\nconst json = pm.response.json();\r\n\r\npm.test(\"StatusCode on 401\", function () {\r\n    pm.expect(json.statusCode).to.eql(401);\r\n});\r\n\r\npm.test(\"Error on Unauthorized\", function () {\r\n    pm.expect(json.error).to.eql(\"Unauthorized\");\r\n});\r\n\r\npm.test(\"Errors sisältää NOT_AUTHENTICATED-virheen\", function () {\r\n    pm.expect(json.errors).to.be.an(\"array\");\r\n    pm.expect(json.errors.length).to.be.above(0);\r\n\r\n    const error = json.errors[0];\r\n\r\n    pm.expect(error.response).to.eql(\"NOT_AUTHENTICATED\");\r\n    pm.expect(error.status).to.eql(401);\r\n    pm.expect(error.reason).to.eql(\"NOT_AUTHENTICATED\");\r\n});"
+                    ]
+                  }
+                }
+              ],
+              "request": {
+                "auth": {
+                  "type": "noauth"
+                },
+                "method": "GET",
+                "header": [],
+                "url": {
+                  "raw": "{{baseUrl}}/profile",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "profile"
+                  ]
+                }
+              },
+              "response": []
+            },
+            {
+              "name": "My Profile – Invalid Token",
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "type": "text/javascript",
+                    "exec": [
+                      "pm.test(\"Palauttaa 401 Unauthorized\", function () {\r\n    pm.response.to.have.status(401);\r\n});\r\n\r\npm.test(\"Response on JSON\", function () {\r\n    pm.response.to.be.json;\r\n});\r\n\r\nconst json = pm.response.json();\r\n\r\npm.test(\"StatusCode on 401\", function () {\r\n    pm.expect(json.statusCode).to.eql(401);\r\n});\r\n\r\npm.test(\"Error on Unauthorized\", function () {\r\n    pm.expect(json.error).to.eql(\"Unauthorized\");\r\n});\r\n\r\npm.test(\"Errors sisältää AUTHENTICATION_FAILED-virheen\", function () {\r\n    pm.expect(json.errors).to.be.an(\"array\");\r\n    pm.expect(json.errors.length).to.be.above(0);\r\n\r\n    const error = json.errors[0];\r\n\r\n    pm.expect(error.response).to.eql(\"AUTHENTICATION_FAILED\");\r\n    pm.expect(error.status).to.eql(401);\r\n    pm.expect(error.reason).to.eql(\"AUTHENTICATION_FAILED\");\r\n});"
+                    ]
+                  }
+                }
+              ],
+              "request": {
+                "auth": {
+                  "type": "bearer",
+                  "bearer": [
+                    {
+                      "key": "token",
+                      "value": "invalid-token",
+                      "type": "string"
+                    }
+                  ]
+                },
+                "method": "GET",
+                "header": [],
+                "url": {
+                  "raw": "{{baseUrl}}/profile",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "profile"
+                  ]
+                }
+              },
+              "response": []
+            },
+            {
+              "name": "My Player – No Token",
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "type": "text/javascript",
+                    "exec": [
+                      "pm.test(\"Palauttaa 401 Unauthorized\", function () {\r\n    pm.response.to.have.status(401);\r\n});\r\n\r\npm.test(\"Response on JSON\", function () {\r\n    pm.response.to.be.json;\r\n});\r\n\r\nconst json = pm.response.json();\r\n\r\npm.test(\"StatusCode on 401\", function () {\r\n    pm.expect(json.statusCode).to.eql(401);\r\n});\r\n\r\npm.test(\"Virheen syy on NOT_AUTHENTICATED\", function () {\r\n    pm.expect(json.errors).to.be.an(\"array\").that.is.not.empty;\r\n    pm.expect(json.errors[0].reason).to.eql(\"NOT_AUTHENTICATED\");\r\n});"
+                    ]
+                  }
+                }
+              ],
+              "request": {
+                "auth": {
+                  "type": "noauth"
+                },
+                "method": "GET",
+                "header": [],
+                "url": {
+                  "raw": "{{baseUrl}}/player",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "player"
+                  ]
+                }
+              },
+              "response": []
+            },
+            {
+              "name": "My Player – Invalid Token",
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "type": "text/javascript",
+                    "exec": [
+                      "pm.test(\"Palauttaa 401 Unauthorized\", function () {\r\n    pm.response.to.have.status(401);\r\n});\r\n\r\npm.test(\"Response on JSON\", function () {\r\n    pm.response.to.be.json;\r\n});\r\n\r\nconst json = pm.response.json();\r\n\r\npm.test(\"StatusCode on 401\", function () {\r\n    pm.expect(json.statusCode).to.eql(401);\r\n});\r\n\r\npm.test(\"Virheen syy on AUTHENTICATION_FAILED\", function () {\r\n    pm.expect(json.errors).to.be.an(\"array\").that.is.not.empty;\r\n    pm.expect(json.errors[0].reason).to.eql(\"AUTHENTICATION_FAILED\");\r\n});"
+                    ]
+                  }
+                }
+              ],
+              "request": {
+                "auth": {
+                  "type": "bearer",
+                  "bearer": [
+                    {
+                      "key": "token",
+                      "value": "invalid-token",
+                      "type": "string"
+                    }
+                  ]
+                },
+                "method": "GET",
+                "header": [],
+                "url": {
+                  "raw": "{{baseUrl}}/player",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "player"
+                  ]
+                }
+              },
+              "response": []
+            },
+            {
+              "name": "Boxes – Regular User Token Rejected.",
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "type": "text/javascript",
+                    "exec": [
+                      "pm.test(\"Status code is 401\", function () {\r\n    pm.response.to.have.status(401);\r\n});\r\n\r\npm.test(\"Response is JSON\", function () {\r\n    pm.response.to.be.json;\r\n});\r\n\r\nconst json = pm.response.json();\r\n\r\npm.test(\"Unauthorized error is returned\", function () {\r\n    pm.expect(json.statusCode).to.eql(401);\r\n    pm.expect(json.error).to.eql(\"Unauthorized\");\r\n});\r\n\r\npm.test(\"Error details exist\", function () {\r\n    pm.expect(json.errors).to.be.an(\"array\");\r\n    pm.expect(json.errors.length).to.be.above(0);\r\n});\r\n\r\npm.test(\"Error reason is INVALID_AUTH_TOKEN\", function () {\r\n    pm.expect(json.errors[0].reason).to.eql(\"INVALID_AUTH_TOKEN\");\r\n});"
+                    ]
+                  }
+                }
+              ],
+              "request": {
+                "method": "GET",
+                "header": [],
+                "url": {
+                  "raw": "{{teacherBaseUrl}}/box",
+                  "host": [
+                    "{{teacherBaseUrl}}"
+                  ],
+                  "path": [
+                    "box"
+                  ]
+                }
+              },
+              "response": []
+            },
+            {
+              "name": "Boxes – No Token",
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "type": "text/javascript",
+                    "exec": [
+                      "pm.test(\"Palauttaa 401 Unauthorized\", function () {\r\n    pm.response.to.have.status(401);\r\n});\r\n\r\npm.test(\"Response on JSON\", function () {\r\n    pm.response.to.be.json;\r\n});\r\n\r\nconst json = pm.response.json();\r\n\r\npm.test(\"StatusCode on 401\", function () {\r\n    pm.expect(json.statusCode).to.eql(401);\r\n});\r\n\r\npm.test(\"Virheen syy on NOT_AUTHENTICATED\", function () {\r\n    pm.expect(json.errors).to.be.an(\"array\").that.is.not.empty;\r\n    pm.expect(json.errors[0].reason).to.eql(\"NOT_AUTHENTICATED\");\r\n});"
+                    ]
+                  }
+                }
+              ],
+              "request": {
+                "auth": {
+                  "type": "noauth"
+                },
+                "method": "GET",
+                "header": [],
+                "url": {
+                  "raw": "{{teacherBaseUrl}}/box",
+                  "host": [
+                    "{{teacherBaseUrl}}"
+                  ],
+                  "path": [
+                    "box"
+                  ]
+                }
+              },
+              "response": []
+            },
+            {
+              "name": "Boxes – Invalid Token",
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "type": "text/javascript",
+                    "exec": [
+                      "pm.test(\"Palauttaa 401 Unauthorized\", function () {\r\n    pm.response.to.have.status(401);\r\n});\r\n\r\npm.test(\"Response on JSON\", function () {\r\n    pm.response.to.be.json;\r\n});\r\n\r\nconst json = pm.response.json();\r\n\r\npm.test(\"StatusCode on 401\", function () {\r\n    pm.expect(json.statusCode).to.eql(401);\r\n});\r\n\r\npm.test(\"Virheen syy on AUTHENTICATION_FAILED\", function () {\r\n    pm.expect(json.errors).to.be.an(\"array\").that.is.not.empty;\r\n    pm.expect(json.errors[0].reason).to.eql(\"AUTHENTICATION_FAILED\");\r\n});"
+                    ]
+                  }
+                }
+              ],
+              "request": {
+                "auth": {
+                  "type": "bearer",
+                  "bearer": [
+                    {
+                      "key": "token",
+                      "value": "invalid-token",
+                      "type": "string"
+                    }
+                  ]
+                },
+                "method": "GET",
+                "header": [],
+                "url": {
+                  "raw": "{{teacherBaseUrl}}/box",
+                  "host": [
+                    "{{teacherBaseUrl}}"
+                  ],
+                  "path": [
+                    "box"
+                  ]
+                }
+              },
+              "response": []
+            },
+            {
+              "name": "Stealable Items – Missing Token",
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "type": "text/javascript",
+                    "exec": [
+                      "pm.test(\"Status code is 403\", function () {\r\n    pm.response.to.have.status(403);\r\n});\r\n\r\npm.test(\"Response is JSON\", function () {\r\n    pm.response.to.be.json;\r\n});\r\n\r\nconst json = pm.response.json();\r\n\r\npm.test(\"Response statusCode is 403\", function () {\r\n    pm.expect(json.statusCode).to.eql(403);\r\n});\r\n\r\npm.test(\"Response contains errors array\", function () {\r\n    pm.expect(json.errors).to.be.an(\"array\").that.is.not.empty;\r\n});\r\n\r\nconst error = json.errors?.[0];\r\n\r\npm.test(\"Error reason is NOT_AUTHORIZED\", function () {\r\n    pm.expect(error).to.exist;\r\n    pm.expect(error.reason).to.eql(\"NOT_AUTHORIZED\");\r\n});\r\n\r\npm.test(\"Error field is steal_token\", function () {\r\n    pm.expect(error).to.exist;\r\n    pm.expect(error.field).to.eql(\"steal_token\");\r\n});"
+                    ]
+                  }
+                }
+              ],
+              "request": {
+                "method": "GET",
+                "header": [],
+                "url": {
+                  "raw": "{{baseUrl}}/item/steal",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "item",
+                    "steal"
+                  ]
+                },
+                "description": "Status:  \nVerified after backend fix.\n\nExpected:  \nHTTP 403 Forbidden when steal_token is missing.\n\nPrevious issue:  \nThe endpoint previously returned HTTP 500 because the guard accessed  \nrequest.body.steal_token when request.body was undefined."
+              },
+              "response": []
+            }
+          ]
+        },
+        {
+          "name": "03 Profile",
+          "item": [
+            {
+              "name": "All Profiles",
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "type": "text/javascript",
+                    "exec": [
+                      "pm.test(\"Status code is 200\", function () {\r\n    pm.response.to.have.status(200);\r\n});\r\n\r\npm.test(\"Response is JSON\", function () {\r\n    pm.response.to.be.json;\r\n});\r\n\r\nconst json = pm.response.json();\r\n\r\npm.test(\"Response contains Profile array\", function () {\r\n    pm.expect(json.data).to.exist;\r\n    pm.expect(json.data.Profile).to.be.an(\"array\");\r\n});\r\n\r\nconst profiles = json.data.Profile;\r\n\r\npm.test(\"Profile array is not empty\", function () {\r\n    pm.expect(profiles.length).to.be.above(0);\r\n});\r\n\r\npm.test(\"Every profile has a valid ID\", function () {\r\n    const objectIdPattern = /^[a-fA-F0-9]{24}$/;\r\n\r\n    profiles.forEach(function (profile) {\r\n        pm.expect(profile._id).to.be.a(\"string\");\r\n        pm.expect(profile._id).to.match(objectIdPattern);\r\n    });\r\n});\r\n\r\npm.test(\"Pagination data exists\", function () {\r\n    pm.expect(json.paginationData).to.exist;\r\n    pm.expect(json.paginationData.currentPage).to.be.a(\"number\");\r\n    pm.expect(json.paginationData.limit).to.be.a(\"number\");\r\n    pm.expect(json.paginationData.itemCount).to.be.a(\"number\");\r\n    pm.expect(json.paginationData.pageCount).to.be.a(\"number\");\r\n});\r\n\r\npm.test(\"Pagination values are valid\", function () {\r\n    pm.expect(json.paginationData.currentPage).to.be.above(0);\r\n    pm.expect(json.paginationData.limit).to.be.above(0);\r\n    pm.expect(json.paginationData.itemCount).to.be.at.least(profiles.length);\r\n    pm.expect(json.paginationData.pageCount).to.be.above(0);\r\n});"
+                    ]
+                  }
+                }
+              ],
+              "request": {
+                "method": "GET",
+                "header": [],
+                "url": {
+                  "raw": "{{baseUrl}}/profile",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "profile"
+                  ]
+                }
+              },
+              "response": []
+            },
+            {
+              "name": "Profile by ID",
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "type": "text/javascript",
+                    "exec": [
+                      "pm.test(\"Status code is 200\", function () {\r\n    pm.response.to.have.status(200);\r\n});\r\n\r\npm.test(\"Response is JSON\", function () {\r\n    pm.response.to.be.json;\r\n});\r\n\r\nconst json = pm.response.json();\r\n\r\npm.test(\"Response contains Profile object\", function () {\r\n    pm.expect(json.data).to.exist;\r\n    pm.expect(json.data.Profile).to.be.an(\"object\");\r\n});\r\n\r\nconst profile = json.data.Profile;\r\n\r\nconst requiredVariables = [\r\n    \"accessToken\",\r\n    \"profileId\"\r\n];\r\n\r\nrequiredVariables.forEach(variable => {\r\n    const value = pm.environment.get(variable);\r\n\r\n    pm.test(`Environment variable ${variable} exists`, function () {\r\n        pm.expect(value, `${variable} is missing`).to.exist;\r\n        pm.expect(value, `${variable} is empty`).to.not.eql(\"\");\r\n    });\r\n});\r\n\r\nconst profileId = pm.environment.get(\"profileId\");\r\nconst objectIdPattern = /^[a-fA-F0-9]{24}$/;\r\n\r\nif (profileId) {\r\n    pm.test(\"profileId has valid Mongo ObjectId format\", function () {\r\n        pm.expect(\r\n            objectIdPattern.test(profileId),\r\n            `Invalid profileId: ${profileId}`\r\n        ).to.be.true;\r\n    });\r\n}\r\n\r\npm.test(\"Returned Profile has valid ID\", function () {\r\n    pm.expect(profile._id).to.be.a(\"string\");\r\n    pm.expect(profile._id).to.match(objectIdPattern);\r\n});\r\n\r\npm.test(\"Profile ID matches requested ID\", function () {\r\n    pm.expect(profile._id).to.eql(profileId);\r\n});"
+                    ]
+                  }
+                }
+              ],
+              "request": {
+                "method": "GET",
+                "header": [],
+                "url": {
+                  "raw": "{{baseUrl}}/profile/{{profileId}}",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "profile",
+                    "{{profileId}}"
+                  ]
+                }
+              },
+              "response": []
+            },
+            {
+              "name": "Profile Info",
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "type": "text/javascript",
+                    "exec": [
+                      "pm.test(\"Status code is 200\", function () {\r\n    pm.response.to.have.status(200);\r\n});\r\n\r\npm.test(\"Response is JSON\", function () {\r\n    pm.response.to.be.json;\r\n});\r\n\r\nconst json = pm.response.json();\r\n\r\npm.test(\"Response contains Profile object\", function () {\r\n    pm.expect(json.data).to.exist;\r\n    pm.expect(json.data.Profile).to.be.an(\"object\");\r\n});\r\n\r\nconst profile = json.data.Profile;\r\n\r\npm.test(\"Profile contains hasSecurityQuestion\", function () {\r\n    pm.expect(profile).to.have.property(\"hasSecurityQuestion\");\r\n    pm.expect(profile.hasSecurityQuestion).to.be.a(\"boolean\");\r\n});"
+                    ]
+                  }
+                }
+              ],
+              "request": {
+                "method": "GET",
+                "header": [],
+                "url": {
+                  "raw": "{{baseUrl}}/profile/info",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "profile",
+                    "info"
+                  ]
+                }
+              },
+              "response": []
+            },
+            {
+              "name": "Profile – Invalid ID Format",
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "type": "text/javascript",
+                    "exec": [
+                      "pm.test(\"Status code is 400\", function () {\r\n    pm.response.to.have.status(400);\r\n});\r\n\r\npm.test(\"Response is JSON\", function () {\r\n    pm.response.to.be.json;\r\n});\r\n\r\nconst json = pm.response.json();\r\n\r\npm.test(\"Response contains an error\", function () {\r\n    pm.expect(json).to.be.an(\"object\");\r\n    pm.expect(json.errors || json.error || json.message).to.exist;\r\n});\r\n\r\npm.test(\"Response statusCode is 400\", function () {\r\n    pm.expect(json.statusCode).to.eql(400);\r\n});"
+                    ]
+                  }
+                }
+              ],
+              "request": {
+                "method": "GET",
+                "header": [],
+                "url": {
+                  "raw": "{{baseUrl}}/profile/invalid-id",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "profile",
+                    "invalid-id"
+                  ]
+                }
+              },
+              "response": []
+            }
+          ]
+        },
+        {
+          "name": "04 Player",
+          "item": [
+            {
+              "name": "Players",
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "type": "text/javascript",
+                    "exec": [
+                      "pm.test(\"Status code is 200\", function () {\r\n    pm.response.to.have.status(200);\r\n});\r\n\r\npm.test(\"Response is JSON\", function () {\r\n    pm.response.to.be.json;\r\n});\r\n\r\nconst json = pm.response.json();\r\n\r\npm.test(\"Response contains Player array\", function () {\r\n    pm.expect(json.data).to.exist;\r\n    pm.expect(json.data.Player).to.be.an(\"array\");\r\n});\r\n\r\nconst players = json.data.Player;\r\n\r\npm.test(\"Player array is not empty\", function () {\r\n    pm.expect(players.length).to.be.above(0);\r\n});\r\n\r\npm.test(\"Every player has a valid _id\", function () {\r\n    const objectIdPattern = /^[a-fA-F0-9]{24}$/;\r\n\r\n    players.forEach(function (player) {\r\n        pm.expect(player._id).to.be.a(\"string\");\r\n        pm.expect(player._id).to.match(objectIdPattern);\r\n    });\r\n});\r\n\r\npm.test(\"Every player has a name\", function () {\r\n    players.forEach(function (player) {\r\n        pm.expect(player.name).to.be.a(\"string\");\r\n        pm.expect(player.name).to.not.be.empty;\r\n    });\r\n});"
+                    ]
+                  }
+                }
+              ],
+              "request": {
+                "method": "GET",
+                "header": [],
+                "url": {
+                  "raw": "{{baseUrl}}/player",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "player"
+                  ]
+                }
+              },
+              "response": []
+            },
+            {
+              "name": "Player by ID",
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "type": "text/javascript",
+                    "exec": [
+                      "pm.test(\"Status code is 200\", function () {\r\n    pm.response.to.have.status(200);\r\n});\r\n\r\npm.test(\"Response is JSON\", function () {\r\n    pm.response.to.be.json;\r\n});\r\n\r\nconst json = pm.response.json();\r\n\r\npm.test(\"Response contains Player object\", function () {\r\n    pm.expect(json.data).to.exist;\r\n    pm.expect(json.data.Player).to.be.an(\"object\");\r\n});\r\n\r\nconst player = json.data.Player;\r\n\r\nconst requiredVariables = [\r\n    \"accessToken\",\r\n    \"playerId\",\r\n    \"profileId\",\r\n    \"clanId\"\r\n];\r\n\r\nrequiredVariables.forEach(variable => {\r\n    const value = pm.environment.get(variable);\r\n\r\n    pm.test(`Environment variable ${variable} exists`, function () {\r\n        pm.expect(value, `${variable} is missing`).to.exist;\r\n        pm.expect(value, `${variable} is empty`).to.not.eql(\"\");\r\n    });\r\n});\r\n\r\nconst playerId = pm.environment.get(\"playerId\");\r\nconst profileId = pm.environment.get(\"profileId\");\r\nconst clanId = pm.environment.get(\"clanId\");\r\nconst objectIdPattern = /^[a-fA-F0-9]{24}$/;\r\n\r\nif (playerId) {\r\n    pm.test(\"playerId has valid Mongo ObjectId format\", function () {\r\n        pm.expect(\r\n            objectIdPattern.test(playerId),\r\n            `Invalid playerId: ${playerId}`\r\n        ).to.be.true;\r\n    });\r\n}\r\n\r\npm.test(\"Returned player has valid ID\", function () {\r\n    pm.expect(player._id).to.be.a(\"string\");\r\n    pm.expect(player._id).to.match(objectIdPattern);\r\n});\r\n\r\npm.test(\"Returned player has correct ID\", function () {\r\n    pm.expect(player._id).to.eql(playerId);\r\n});\r\n\r\npm.test(\"Returned player has a name\", function () {\r\n    pm.expect(player.name).to.be.a(\"string\");\r\n    pm.expect(player.name).to.not.be.empty;\r\n});\r\n\r\npm.test(\"Player belongs to correct profile\", function () {\r\n    pm.expect(player.profile_id).to.eql(profileId);\r\n});\r\n\r\npm.test(\"Player belongs to correct clan\", function () {\r\n    pm.expect(player.clan_id).to.eql(clanId);\r\n});"
+                    ]
+                  }
+                }
+              ],
+              "request": {
+                "method": "GET",
+                "header": [],
+                "url": {
+                  "raw": "{{baseUrl}}/player/{{playerId}}",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "player",
+                    "{{playerId}}"
+                  ]
+                }
+              },
+              "response": []
+            },
+            {
+              "name": "Player – Invalid ID Format",
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "type": "text/javascript",
+                    "exec": [
+                      "pm.test(\"Status code is 400\", function () {\r\n    pm.response.to.have.status(400);\r\n});\r\n\r\npm.test(\"Response is JSON\", function () {\r\n    pm.response.to.be.json;\r\n});\r\n\r\nconst json = pm.response.json();\r\n\r\npm.test(\"Response statusCode is 400\", function () {\r\n    pm.expect(json.statusCode).to.eql(400);\r\n});\r\n\r\npm.test(\"Response contains errors array\", function () {\r\n    pm.expect(json.errors).to.be.an(\"array\").that.is.not.empty;\r\n});\r\n\r\npm.test(\"Error points to _id field\", function () {\r\n    pm.expect(json.errors[0].field).to.eql(\"_id\");\r\n});\r\n\r\npm.test(\"Error reason is NOT_ALLOWED\", function () {\r\n    pm.expect(json.errors[0].reason).to.eql(\"NOT_ALLOWED\");\r\n});"
+                    ]
+                  }
+                }
+              ],
+              "request": {
+                "method": "GET",
+                "header": [],
+                "url": {
+                  "raw": "{{baseUrl}}/player/123",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "player",
+                    "123"
+                  ]
+                }
+              },
+              "response": []
+            },
+            {
+              "name": "Player - Nonexistent ID",
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "type": "text/javascript",
+                    "exec": [
+                      "pm.test(\"Status code is 404\", function () {\r\n    pm.response.to.have.status(404);\r\n});\r\n\r\npm.test(\"Response is JSON\", function () {\r\n    pm.response.to.be.json;\r\n});\r\n\r\nconst json = pm.response.json();\r\n\r\npm.test(\"Response statusCode is 404\", function () {\r\n    pm.expect(json.statusCode).to.eql(404);\r\n});\r\n\r\npm.test(\"Response contains errors array\", function () {\r\n    pm.expect(json.errors).to.be.an(\"array\").that.is.not.empty;\r\n});\r\n\r\npm.test(\"Error reason is NOT_FOUND\", function () {\r\n    pm.expect(json.errors[0].reason).to.eql(\"NOT_FOUND\");\r\n});\r\n\r\npm.test(\"Error points to _id field\", function () {\r\n    pm.expect(json.errors[0].field).to.eql(\"_id\");\r\n});\r\n\r\npm.test(\"Error contains requested id\", function () {\r\n    pm.expect(json.errors[0].value).to.eql(\r\n        \"000000000000000000000000\"\r\n    );\r\n});"
+                    ]
+                  }
+                }
+              ],
+              "request": {
+                "method": "GET",
+                "header": [],
+                "url": {
+                  "raw": "{{baseUrl}}/player/000000000000000000000000",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "player",
+                    "000000000000000000000000"
+                  ]
+                }
+              },
+              "response": []
+            }
+          ]
+        },
+        {
+          "name": "05 Clan",
+          "item": [
+            {
+              "name": "Clans",
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "type": "text/javascript",
+                    "exec": [
+                      "pm.test(\"Status code is 200\", function () {\r\n    pm.response.to.have.status(200);\r\n});\r\n\r\npm.test(\"Response is JSON\", function () {\r\n    pm.response.to.be.json;\r\n});\r\n\r\nconst json = pm.response.json();\r\n\r\npm.test(\"Response contains Clan array\", function () {\r\n    pm.expect(json.data).to.exist;\r\n    pm.expect(json.data.Clan).to.be.an(\"array\");\r\n});\r\n\r\nconst clans = json.data.Clan;\r\n\r\npm.test(\"Clan array is not empty\", function () {\r\n    pm.expect(clans.length).to.be.above(0);\r\n});\r\n\r\npm.test(\"Every clan has a valid _id\", function () {\r\n    const objectIdPattern = /^[a-fA-F0-9]{24}$/;\r\n\r\n    clans.forEach(function (clan) {\r\n        pm.expect(clan._id).to.be.a(\"string\");\r\n        pm.expect(clan._id).to.match(objectIdPattern);\r\n    });\r\n});\r\n\r\npm.test(\"Every clan has a name\", function () {\r\n    clans.forEach(function (clan) {\r\n        pm.expect(clan.name).to.be.a(\"string\");\r\n    });\r\n});\r\n\r\npm.test(\"Every clan has a tag\", function () {\r\n    clans.forEach(function (clan) {\r\n        pm.expect(clan.tag).to.be.a(\"string\");\r\n    });\r\n});"
+                    ]
+                  }
+                }
+              ],
+              "request": {
+                "method": "GET",
+                "header": [],
+                "url": {
+                  "raw": "{{baseUrl}}/clan",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "clan"
+                  ]
+                }
+              },
+              "response": []
+            },
+            {
+              "name": "Clan by ID",
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "type": "text/javascript",
+                    "exec": [
+                      "pm.test(\"Status code is 200\", function () {\r\n    pm.response.to.have.status(200);\r\n});\r\n\r\npm.test(\"Response is JSON\", function () {\r\n    pm.response.to.be.json;\r\n});\r\n\r\nconst json = pm.response.json();\r\n\r\npm.test(\"Response contains Clan object\", function () {\r\n    pm.expect(json.data).to.exist;\r\n    pm.expect(json.data.Clan).to.be.an(\"object\");\r\n});\r\n\r\nconst clan = json.data.Clan;\r\n\r\nconst requiredVariables = [\r\n    \"accessToken\",\r\n    \"clanId\"\r\n];\r\n\r\nrequiredVariables.forEach(variable => {\r\n    const value = pm.environment.get(variable);\r\n\r\n    pm.test(`Environment variable ${variable} exists`, function () {\r\n        pm.expect(value, `${variable} is missing`).to.exist;\r\n        pm.expect(value, `${variable} is empty`).to.not.eql(\"\");\r\n    });\r\n});\r\n\r\nconst clanId = pm.environment.get(\"clanId\");\r\nconst objectIdPattern = /^[a-fA-F0-9]{24}$/;\r\n\r\nif (clanId) {\r\n    pm.test(\"clanId has valid Mongo ObjectId format\", function () {\r\n        pm.expect(\r\n            objectIdPattern.test(clanId),\r\n            `Invalid clanId: ${clanId}`\r\n        ).to.be.true;\r\n    });\r\n}\r\n\r\npm.test(\"Returned clan has valid ID\", function () {\r\n    pm.expect(clan._id).to.be.a(\"string\");\r\n    pm.expect(clan._id).to.match(objectIdPattern);\r\n});\r\n\r\npm.test(\"Returned clan has correct ID\", function () {\r\n    pm.expect(clan._id).to.eql(clanId);\r\n});\r\n\r\npm.test(\"Returned clan has a name\", function () {\r\n    pm.expect(clan.name).to.be.a(\"string\");\r\n    pm.expect(clan.name).to.not.be.empty;\r\n});\r\n\r\npm.test(\"Returned clan has a tag\", function () {\r\n    pm.expect(clan.tag).to.be.a(\"string\");\r\n    pm.expect(clan.tag).to.not.be.empty;\r\n});"
+                    ]
+                  }
+                }
+              ],
+              "request": {
+                "method": "GET",
+                "header": [],
+                "url": {
+                  "raw": "{{baseUrl}}/clan/{{clanId}}",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "clan",
+                    "{{clanId}}"
+                  ]
+                }
+              },
+              "response": []
+            },
+            {
+              "name": "Clan - Invalid ID Format",
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "type": "text/javascript",
+                    "exec": [
+                      "pm.test(\"Status code is 400\", function () {\r\n    pm.response.to.have.status(400);\r\n});\r\n\r\npm.test(\"Response is JSON\", function () {\r\n    pm.response.to.be.json;\r\n});\r\n\r\nconst json = pm.response.json();\r\n\r\npm.test(\"Response statusCode is 400\", function () {\r\n    pm.expect(json.statusCode).to.eql(400);\r\n});\r\n\r\npm.test(\"Response contains errors array\", function () {\r\n    pm.expect(json.errors).to.be.an(\"array\").that.is.not.empty;\r\n});\r\n\r\npm.test(\"Error reason is NOT_ALLOWED\", function () {\r\n    pm.expect(json.errors[0].reason).to.eql(\"NOT_ALLOWED\");\r\n});\r\n\r\npm.test(\"Error points to _id field\", function () {\r\n    pm.expect(json.errors[0].field).to.eql(\"_id\");\r\n});"
+                    ]
+                  }
+                }
+              ],
+              "request": {
+                "method": "GET",
+                "header": [],
+                "url": {
+                  "raw": "{{baseUrl}}/clan/123",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "clan",
+                    "123"
+                  ]
+                }
+              },
+              "response": []
+            },
+            {
+              "name": "Clan - Nonexistent ID",
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "type": "text/javascript",
+                    "exec": [
+                      "pm.test(\"Status code is 404\", function () {\r\n    pm.response.to.have.status(404);\r\n});\r\n\r\npm.test(\"Response is JSON\", function () {\r\n    pm.response.to.be.json;\r\n});\r\n\r\nconst json = pm.response.json();\r\n\r\npm.test(\"Response statusCode is 404\", function () {\r\n    pm.expect(json.statusCode).to.eql(404);\r\n});\r\n\r\npm.test(\"Response contains errors array\", function () {\r\n    pm.expect(json.errors).to.be.an(\"array\").that.is.not.empty;\r\n});\r\n\r\npm.test(\"Error reason is NOT_FOUND\", function () {\r\n    pm.expect(json.errors[0].reason).to.eql(\"NOT_FOUND\");\r\n});\r\n\r\npm.test(\"Error points to _id field\", function () {\r\n    pm.expect(json.errors[0].field).to.eql(\"_id\");\r\n});\r\n\r\npm.test(\"Error contains requested id\", function () {\r\n    pm.expect(json.errors[0].value).to.eql(\r\n        \"000000000000000000000000\"\r\n    );\r\n});"
+                    ]
+                  }
+                }
+              ],
+              "request": {
+                "method": "GET",
+                "header": [],
+                "url": {
+                  "raw": "{{baseUrl}}/clan/000000000000000000000000",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "clan",
+                    "000000000000000000000000"
+                  ]
+                }
+              },
+              "response": []
+            }
+          ]
+        },
+        {
+          "name": "06 Room",
+          "item": [
+            {
+              "name": "Room by ID",
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "type": "text/javascript",
+                    "exec": [
+                      "pm.test(\"Status code is 200\", function () {\r\n    pm.response.to.have.status(200);\r\n});\r\n\r\npm.test(\"Response is JSON\", function () {\r\n    pm.response.to.be.json;\r\n});\r\n\r\nconst json = pm.response.json();\r\n\r\npm.test(\"Response contains Room object\", function () {\r\n    pm.expect(json.data).to.exist;\r\n    pm.expect(json.data.Room).to.be.an(\"object\");\r\n});\r\n\r\nconst room = json.data.Room;\r\n\r\nconst requiredVariables = [\r\n    \"accessToken\",\r\n    \"roomId\"\r\n];\r\n\r\nrequiredVariables.forEach(variable => {\r\n    const value = pm.environment.get(variable);\r\n\r\n    pm.test(`Environment variable ${variable} exists`, function () {\r\n        pm.expect(value, `${variable} is missing`).to.exist;\r\n        pm.expect(value, `${variable} is empty`).to.not.eql(\"\");\r\n    });\r\n});\r\n\r\nconst roomId = pm.environment.get(\"roomId\");\r\nconst objectIdPattern = /^[a-fA-F0-9]{24}$/;\r\n\r\nif (roomId) {\r\n    pm.test(\"roomId has valid Mongo ObjectId format\", function () {\r\n        pm.expect(\r\n            objectIdPattern.test(roomId),\r\n            `Invalid roomId: ${roomId}`\r\n        ).to.be.true;\r\n    });\r\n}\r\n\r\npm.test(\"Returned room has valid ID\", function () {\r\n    pm.expect(room._id).to.be.a(\"string\");\r\n    pm.expect(room._id).to.match(objectIdPattern);\r\n});\r\n\r\npm.test(\"Returned room has correct ID\", function () {\r\n    pm.expect(room._id).to.eql(roomId);\r\n});\r\n\r\npm.test(\"Returned room has floorType\", function () {\r\n    pm.expect(room.floorType).to.be.a(\"string\");\r\n});\r\n\r\npm.test(\"Returned room has wallType\", function () {\r\n    pm.expect(room.wallType).to.be.a(\"string\");\r\n});\r\n\r\npm.test(\"Returned room has valid cellCount\", function () {\r\n    pm.expect(room.cellCount).to.be.a(\"number\");\r\n    pm.expect(room.cellCount).to.be.at.least(0);\r\n});\r\n\r\npm.test(\"Returned room has hasLift boolean\", function () {\r\n    pm.expect(room.hasLift).to.be.a(\"boolean\");\r\n});\r\n\r\npm.test(\"Returned room has valid soulHome_id\", function () {\r\n    pm.expect(room.soulHome_id).to.be.a(\"string\");\r\n    pm.expect(room.soulHome_id).to.match(objectIdPattern);\r\n});\r\n\r\npm.test(\"isActive is boolean when returned\", function () {\r\n    if (Object.prototype.hasOwnProperty.call(room, \"isActive\")) {\r\n        pm.expect(room.isActive).to.be.a(\"boolean\");\r\n    }\r\n});"
+                    ]
+                  }
+                }
+              ],
+              "request": {
+                "method": "GET",
+                "header": [],
+                "url": {
+                  "raw": "{{baseUrl}}/room/{{roomId}}",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "room",
+                    "{{roomId}}"
+                  ]
+                }
+              },
+              "response": []
+            },
+            {
+              "name": "Room - Invalid ID Format",
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "type": "text/javascript",
+                    "exec": [
+                      "pm.test(\"Status code is 400\", function () {\r\n    pm.response.to.have.status(400);\r\n});\r\n\r\npm.test(\"Response is JSON\", function () {\r\n    pm.response.to.be.json;\r\n});\r\n\r\nconst json = pm.response.json();\r\n\r\npm.test(\"Response statusCode is 400\", function () {\r\n    pm.expect(json.statusCode).to.eql(400);\r\n});\r\n\r\npm.test(\"Response contains errors array\", function () {\r\n    pm.expect(json.errors).to.be.an(\"array\").that.is.not.empty;\r\n});\r\n\r\npm.test(\"Error reason is NOT_ALLOWED\", function () {\r\n    pm.expect(json.errors[0].reason).to.eql(\"NOT_ALLOWED\");\r\n});\r\n\r\npm.test(\"Error points to _id field\", function () {\r\n    pm.expect(json.errors[0].field).to.eql(\"_id\");\r\n});"
+                    ]
+                  }
+                }
+              ],
+              "request": {
+                "method": "GET",
+                "header": [],
+                "url": {
+                  "raw": "{{baseUrl}}/room/123",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "room",
+                    "123"
+                  ]
+                }
+              },
+              "response": []
+            },
+            {
+              "name": "Room - Nonexistent ID",
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "type": "text/javascript",
+                    "exec": [
+                      "pm.test(\"Status code is 404\", function () {\r\n    pm.response.to.have.status(404);\r\n});\r\n\r\npm.test(\"Response is JSON\", function () {\r\n    pm.response.to.be.json;\r\n});\r\n\r\nconst json = pm.response.json();\r\n\r\npm.test(\"Response statusCode is 404\", function () {\r\n    pm.expect(json.statusCode).to.eql(404);\r\n});\r\n\r\npm.test(\"Response contains errors array\", function () {\r\n    pm.expect(json.errors).to.be.an(\"array\").that.is.not.empty;\r\n});\r\n\r\npm.test(\"Error reason is NOT_FOUND\", function () {\r\n    pm.expect(json.errors[0].reason).to.eql(\"NOT_FOUND\");\r\n});"
+                    ]
+                  }
+                }
+              ],
+              "request": {
+                "method": "GET",
+                "header": [],
+                "url": {
+                  "raw": "{{baseUrl}}/room/000000000000000000000000",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "room",
+                    "000000000000000000000000"
+                  ]
+                }
+              },
+              "response": []
+            }
+          ]
+        },
+        {
+          "name": "07 Item",
+          "item": [
+            {
+              "name": "Clan Items",
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "type": "text/javascript",
+                    "exec": [
+                      "pm.test(\"Status code is 200\", function () {\r\n    pm.response.to.have.status(200);\r\n});\r\n\r\npm.test(\"Response is JSON\", function () {\r\n    pm.response.to.be.json;\r\n});\r\n\r\nconst json = pm.response.json();\r\n\r\npm.test(\"Response contains Item object\", function () {\r\n    pm.expect(json.data).to.exist;\r\n    pm.expect(json.data.Item).to.be.an(\"object\");\r\n});\r\n\r\nconst itemData = json.data?.Item;\r\n\r\npm.test(\"Response contains stockItems array\", function () {\r\n    pm.expect(itemData).to.exist;\r\n    pm.expect(itemData.stockItems).to.be.an(\"array\");\r\n});\r\n\r\nconst stockItems = itemData?.stockItems || [];\r\n\r\npm.test(\"Every stock item has a valid _id\", function () {\r\n    const objectIdPattern = /^[a-fA-F0-9]{24}$/;\r\n\r\n    stockItems.forEach(function (item) {\r\n        pm.expect(item._id).to.be.a(\"string\");\r\n        pm.expect(item._id).to.match(objectIdPattern);\r\n    });\r\n});\r\n\r\npm.test(\"Every stock item has a name\", function () {\r\n    stockItems.forEach(function (item) {\r\n        pm.expect(item.name).to.be.a(\"string\");\r\n        pm.expect(item.name).to.not.be.empty;\r\n    });\r\n});\r\n\r\nif (stockItems.length > 0) {\r\n    pm.environment.set(\"itemId\", stockItems[0]._id);\r\n} else {\r\n    pm.environment.unset(\"itemId\");\r\n}"
+                    ]
+                  }
+                }
+              ],
+              "request": {
+                "method": "GET",
+                "header": [],
+                "url": {
+                  "raw": "{{baseUrl}}/clan/items",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "clan",
+                    "items"
+                  ]
+                }
+              },
+              "response": []
+            },
+            {
+              "name": "Item - Invalid ID Format",
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "type": "text/javascript",
+                    "exec": [
+                      "pm.test(\"Status code is 400\", function () {\r\n    pm.response.to.have.status(400);\r\n});\r\n\r\npm.test(\"Response is JSON\", function () {\r\n    pm.response.to.be.json;\r\n});\r\n\r\nconst json = pm.response.json();\r\n\r\npm.test(\"Response statusCode is 400\", function () {\r\n    pm.expect(json.statusCode).to.eql(400);\r\n});\r\n\r\npm.test(\"Response contains errors array\", function () {\r\n    pm.expect(json.errors).to.be.an(\"array\").that.is.not.empty;\r\n});\r\n\r\nconst error = json.errors?.[0];\r\n\r\npm.test(\"Error reason is NOT_ALLOWED\", function () {\r\n    pm.expect(error).to.exist;\r\n    pm.expect(error.reason).to.eql(\"NOT_ALLOWED\");\r\n});\r\n\r\npm.test(\"Error field is _id\", function () {\r\n    pm.expect(error).to.exist;\r\n    pm.expect(error.field).to.eql(\"_id\");\r\n});"
+                    ]
+                  }
+                }
+              ],
+              "request": {
+                "method": "GET",
+                "header": [],
+                "url": {
+                  "raw": "{{baseUrl}}/item/123",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "item",
+                    "123"
+                  ]
+                }
+              },
+              "response": []
+            },
+            {
+              "name": "Item - Nonexistent ID",
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "type": "text/javascript",
+                    "exec": [
+                      "pm.test(\"Status code is 404\", function () {\r\n    pm.response.to.have.status(404);\r\n});\r\n\r\npm.test(\"Response is JSON\", function () {\r\n    pm.response.to.be.json;\r\n});\r\n\r\nconst json = pm.response.json();\r\n\r\npm.test(\"Response statusCode is 404\", function () {\r\n    pm.expect(json.statusCode).to.eql(404);\r\n});\r\n\r\npm.test(\"Response contains errors array\", function () {\r\n    pm.expect(json.errors).to.be.an(\"array\").that.is.not.empty;\r\n});\r\n\r\nconst error = json.errors?.[0];\r\n\r\npm.test(\"Error reason is NOT_FOUND\", function () {\r\n    pm.expect(error).to.exist;\r\n    pm.expect(error.reason).to.eql(\"NOT_FOUND\");\r\n});\r\n\r\npm.test(\"Error field is _id\", function () {\r\n    pm.expect(error).to.exist;\r\n    pm.expect(error.field).to.eql(\"_id\");\r\n});\r\n\r\npm.test(\"Returned item id matches request\", function () {\r\n    pm.expect(error).to.exist;\r\n    pm.expect(error.value).to.eql(\"507f1f77bcf86cd799439011\");\r\n});"
+                    ]
+                  }
+                }
+              ],
+              "request": {
+                "method": "GET",
+                "header": [],
+                "url": {
+                  "raw": "{{baseUrl}}/item/507f1f77bcf86cd799439011",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "item",
+                    "507f1f77bcf86cd799439011"
+                  ]
+                }
+              },
+              "response": []
+            }
+          ]
+        },
+        {
+          "name": "08 Stock",
+          "item": [
+            {
+              "name": "Stock",
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "type": "text/javascript",
+                    "exec": [
+                      "pm.test(\"Status code is 200\", function () {\r\n    pm.response.to.have.status(200);\r\n});\r\n\r\npm.test(\"Response is JSON\", function () {\r\n    pm.response.to.be.json;\r\n});\r\n\r\nconst json = pm.response.json();\r\n\r\npm.test(\"Response contains Stock array\", function () {\r\n    pm.expect(json.data).to.exist;\r\n    pm.expect(json.data.Stock).to.be.an(\"array\");\r\n});\r\n\r\nconst stocks = json.data.Stock;\r\nconst objectIdPattern = /^[a-fA-F0-9]{24}$/;\r\n\r\npm.test(\"Stock array is not empty\", function () {\r\n    pm.expect(stocks.length).to.be.above(0);\r\n});\r\n\r\npm.test(\"Every stock has a valid _id\", function () {\r\n    stocks.forEach(function (stock) {\r\n        pm.expect(stock._id).to.be.a(\"string\");\r\n        pm.expect(stock._id).to.match(objectIdPattern);\r\n    });\r\n});\r\n\r\npm.test(\"Every stock has a valid cellCount\", function () {\r\n    stocks.forEach(function (stock) {\r\n        pm.expect(stock.cellCount).to.be.a(\"number\");\r\n        pm.expect(stock.cellCount).to.be.at.least(0);\r\n    });\r\n});\r\n\r\npm.test(\"Every stock has a valid clan_id\", function () {\r\n    stocks.forEach(function (stock) {\r\n        pm.expect(stock.clan_id).to.be.a(\"string\");\r\n        pm.expect(stock.clan_id).to.match(objectIdPattern);\r\n    });\r\n});\r\n\r\npm.test(\"Every stock has an environment number\", function () {\r\n    stocks.forEach(function (stock) {\r\n        pm.expect(stock.environment).to.be.a(\"number\");\r\n    });\r\n});\r\n\r\nconst clanId = pm.environment.get(\"clanId\");\r\n\r\nconst ownStock = stocks.find(function (stock) {\r\n    return stock.clan_id === clanId;\r\n});\r\n\r\npm.test(\"Own clan Stock exists\", function () {\r\n    pm.expect(ownStock).to.exist;\r\n});\r\n\r\nif (ownStock) {\r\n    pm.environment.set(\"stockId\", ownStock._id);\r\n} else {\r\n    pm.environment.unset(\"stockId\");\r\n}\r\n\r\npm.test(\"stockId was saved\", function () {\r\n    const stockId = pm.environment.get(\"stockId\");\r\n\r\n    pm.expect(stockId).to.exist;\r\n    pm.expect(stockId).to.not.eql(\"\");\r\n    pm.expect(stockId).to.match(objectIdPattern);\r\n});"
+                    ]
+                  }
+                }
+              ],
+              "request": {
+                "method": "GET",
+                "header": [],
+                "url": {
+                  "raw": "{{baseUrl}}/stock",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "stock"
+                  ]
+                }
+              },
+              "response": []
+            },
+            {
+              "name": "Stock by ID",
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "type": "text/javascript",
+                    "exec": [
+                      "pm.test(\"Status code is 200\", function () {\r\n    pm.response.to.have.status(200);\r\n});\r\n\r\npm.test(\"Response is JSON\", function () {\r\n    pm.response.to.be.json;\r\n});\r\n\r\nconst json = pm.response.json();\r\n\r\npm.test(\"Response contains Item array\", function () {\r\n    pm.expect(json.data).to.exist;\r\n    pm.expect(json.data.Item).to.be.an(\"array\");\r\n});\r\n\r\nconst stockId = pm.environment.get(\"stockId\");\r\nconst objectIdPattern = /^[a-fA-F0-9]{24}$/;\r\n\r\npm.test(\"stockId exists\", function () {\r\n    pm.expect(stockId).to.exist;\r\n    pm.expect(stockId).to.not.eql(\"\");\r\n});\r\n\r\npm.test(\"stockId has valid Mongo ObjectId format\", function () {\r\n    pm.expect(stockId).to.match(objectIdPattern);\r\n});\r\n\r\npm.test(\"Metadata describes Item array\", function () {\r\n    pm.expect(json.metaData).to.exist;\r\n    pm.expect(json.metaData.dataKey).to.eql(\"Item\");\r\n    pm.expect(json.metaData.dataType).to.eql(\"Array\");\r\n});"
+                    ]
+                  }
+                }
+              ],
+              "request": {
+                "method": "GET",
+                "header": [],
+                "url": {
+                  "raw": "{{baseUrl}}/stock/{{stockId}}",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "stock",
+                    "{{stockId}}"
+                  ]
+                }
+              },
+              "response": []
+            }
+          ]
+        },
+        {
+          "name": "09 Soulhome",
+          "item": [
+            {
+              "name": "My Soulhome",
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "type": "text/javascript",
+                    "exec": [
+                      "pm.test(\"Status code is 200\", function () {\r\n    pm.response.to.have.status(200);\r\n});\r\n\r\npm.test(\"Response is JSON\", function () {\r\n    pm.response.to.be.json;\r\n});\r\n\r\nconst json = pm.response.json();\r\n\r\npm.test(\"Response contains SoulHome object\", function () {\r\n    pm.expect(json.data).to.exist;\r\n    pm.expect(json.data.SoulHome).to.be.an(\"object\");\r\n});\r\n\r\nconst soulHome = json.data.SoulHome;\r\nconst clanId = pm.environment.get(\"clanId\");\r\nconst objectIdPattern = /^[a-fA-F0-9]{24}$/;\r\n\r\npm.test(\"clanId exists in environment\", function () {\r\n    pm.expect(clanId).to.exist;\r\n    pm.expect(clanId).to.not.eql(\"\");\r\n});\r\n\r\npm.test(\"SoulHome has a valid _id\", function () {\r\n    pm.expect(soulHome._id).to.be.a(\"string\");\r\n    pm.expect(soulHome._id).to.match(objectIdPattern);\r\n});\r\n\r\npm.test(\"SoulHome has a name\", function () {\r\n    pm.expect(soulHome.name).to.be.a(\"string\");\r\n    pm.expect(soulHome.name).to.not.be.empty;\r\n});\r\n\r\npm.test(\"SoulHome has a valid clan_id\", function () {\r\n    pm.expect(soulHome.clan_id).to.be.a(\"string\");\r\n    pm.expect(soulHome.clan_id).to.match(objectIdPattern);\r\n});\r\n\r\npm.test(\"SoulHome belongs to correct clan\", function () {\r\n    pm.expect(soulHome.clan_id).to.eql(clanId);\r\n});\r\n\r\npm.test(\"SoulHome has an environment number\", function () {\r\n    pm.expect(soulHome.environment).to.be.a(\"number\");\r\n});"
+                    ]
+                  }
+                }
+              ],
+              "request": {
+                "method": "GET",
+                "header": [],
+                "url": {
+                  "raw": "{{baseUrl}}/soulhome",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "soulhome"
+                  ]
+                }
+              },
+              "response": []
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "auth": {
+    "type": "bearer",
+    "bearer": [
+      {
+        "key": "token",
+        "value": "{{accessToken}}",
+        "type": "string"
+      }
+    ]
+  }
+}
