@@ -52,7 +52,7 @@ An additional Newman run with HTML Extra reporting also completed successfully.
 
 ### 1. Requirements
 
-Install Node.js, Newman, and optionally the HTML Extra reporter.
+Install Node.js and Newman. HTML Extra Reporter is optional.
 
 ```powershell
 npm install -g newman@6.2.2
@@ -61,33 +61,72 @@ npm install -g newman-reporter-htmlextra@1.23.1
 
 ### 2. Configure the environment
 
-Import `environment.example.json` into Postman or use it with Newman.
+The repository includes `environment.example.json` with the required environment variable names and no credentials.
 
-Set the `username` and `password` values locally for an authorized ALT Zone development API test account.
+Import the collection and example environment into Postman. For Postman testing, enter the credentials of an authorized development test account locally.
 
-Do not commit credentials, authentication tokens, or private environment files to GitHub.
+For Newman, use PowerShell to provide credentials without saving them in the repository.
 
-### 3. Run in Postman
+### 3. Run tests in Postman
 
-Import the Postman collection and example environment, configure your test account, and run the entire `Regression Portfolio` folder using Postman's Collection Runner.
+1. Import the collection and `environment.example.json`.
+2. Select the imported environment and configure the test account credentials locally.
+3. Open the Collection Runner.
+4. Run the entire `Regression Portfolio` folder, starting with authentication.
 
-### 4. Run with Newman
+### 4. Run tests with Newman
 
-After configuring an authorized test environment, execute:
+Open PowerShell in the directory containing the collection and example environment.
+
+Enter the following commands:
 
 ```powershell
-newman.cmd run "ALT Zone API Regression Portfolio.postman_collection.json" -e "environment.example.json" -r cli
+$env:ALTZONE_BASE_URL = "https://devapi.altzone.fi"
+$env:ALTZONE_TEACHER_URL = "https://devapi.altzone.fi/teacher"
+
+$env:ALTZONE_USERNAME = Read-Host "Test account username"
+
+$securePassword = Read-Host "Test account password" -AsSecureString
+$env:ALTZONE_PASSWORD = [System.Net.NetworkCredential]::new("", $securePassword).Password
+Remove-Variable securePassword
 ```
 
-The example environment has empty credentials, so authenticated tests require valid local credentials before running.
+Then execute the collection:
+
+```powershell
+newman.cmd run "ALT Zone API Regression Portfolio.postman_collection.json" `
+  -e "environment.example.json" `
+  --env-var "baseUrl=$env:ALTZONE_BASE_URL" `
+  --env-var "teacherBaseUrl=$env:ALTZONE_TEACHER_URL" `
+  --env-var "username=$env:ALTZONE_USERNAME" `
+  --env-var "password=$env:ALTZONE_PASSWORD" `
+  -r cli
+```
 
 ### 5. Generate an HTML report
 
+Run the same collection with HTML Extra Reporter:
+
 ```powershell
-newman.cmd run "ALT Zone API Regression Portfolio.postman_collection.json" -e "environment.example.json" -r cli,htmlextra --reporter-htmlextra-export "ALT-Zone-Regression-Report.html"
+newman.cmd run "ALT Zone API Regression Portfolio.postman_collection.json" `
+  -e "environment.example.json" `
+  --env-var "baseUrl=$env:ALTZONE_BASE_URL" `
+  --env-var "teacherBaseUrl=$env:ALTZONE_TEACHER_URL" `
+  --env-var "username=$env:ALTZONE_USERNAME" `
+  --env-var "password=$env:ALTZONE_PASSWORD" `
+  -r cli,htmlextra `
+  --reporter-htmlextra-export "ALT-Zone-Regression-Report.html"
 ```
 
-HTML reports may contain sensitive request and response information. Review and sanitize them before sharing.
+**Security notes:** Password input is masked and is not saved to PowerShell command history as literal text. However, these commands pass credentials through process arguments, which may be visible to local process-monitoring tools. The password also remains in the PowerShell process environment until cleared or the session ends. Use only dedicated test credentials.
+
+After testing, clear the variables:
+
+```powershell
+Remove-Item Env:ALTZONE_USERNAME, Env:ALTZONE_PASSWORD -ErrorAction SilentlyContinue
+```
+
+HTML reports may contain sensitive request or response data, including authentication tokens. Keep generated reports private unless carefully sanitized.
 
 ## AI-Assisted Testing
 
